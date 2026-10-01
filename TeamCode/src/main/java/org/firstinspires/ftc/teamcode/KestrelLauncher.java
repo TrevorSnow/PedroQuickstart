@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.TestTeleop.determineRotationDirection;
 import static org.firstinspires.ftc.teamcode.TestTeleop.normalizeAngle;
+import static org.firstinspires.ftc.teamcode.TestTeleop.stephenPose;
 import static org.firstinspires.ftc.teamcode.TestTeleop.turretTracking;
 
 import com.pedropathing.math.Pose;
@@ -11,23 +12,24 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.HeadingPIDF;
 
 public class KestrelLauncher {
     DcMotorEx motorLaunch, motorIntake, motorTurret;
     public static double
-            launcher_p = 0, launcher_f = 0, turret_p = 0, turret_i = 0, turret_d = 0, turret_f = 0; // TODO tune ts
-    Pose stephenPose = TestTeleop.stephenPose;
+            launcher_p = 0, launcher_f = 0, turret_p = 0.005, turret_i = 0, turret_d = 0, turret_f = 0.01; // TODO tune ts
     HeadingPIDF headingPIDF;
 
     public void init(HardwareMap hwMap) {
-        motorLaunch = (DcMotorEx) hwMap.dcMotor.get("launch");
-        motorIntake = (DcMotorEx) hwMap.dcMotor.get("intake");
-        motorTurret = (DcMotorEx) hwMap.dcMotor.get("turret");
+        //motorLaunch = (DcMotorEx) hwMap.dcMotor.get("launch");
+        motorLaunch = hwMap.get(DcMotorEx.class, "launch");
+        motorIntake = hwMap.get(DcMotorEx.class, "intake");
+        motorTurret = hwMap.get(DcMotorEx.class, "turret");
 
         motorLaunch.setDirection(DcMotorSimple.Direction.FORWARD);
         motorIntake.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorTurret.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorTurret.setDirection(DcMotorSimple.Direction.REVERSE);
 
         motorLaunch.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         motorIntake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -36,6 +38,7 @@ public class KestrelLauncher {
         motorLaunch.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorTurret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        motorLaunch.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorTurret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         motorLaunch.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,
@@ -44,7 +47,8 @@ public class KestrelLauncher {
     }
 
     double targetVelocity = 0;
-    public static double ticksPerDegree = 10; // TODO tune ts
+    public static double ticksPerDegree = 381/360; // TODO tune ts
+    double turretAngle = 0, targetAngle = 0, angleError = 0;
 
     public void update(boolean isShooting, double distance, double targetHeading) {
         motorLaunch.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,
@@ -58,26 +62,37 @@ public class KestrelLauncher {
             motorLaunch.setVelocity(0);
         }
 
-        double turretAngle = motorTurret.getCurrentPosition()/ticksPerDegree;
-        double targetAngle = normalizeAngle(targetHeading - stephenPose.heading());
-        double angleError = determineRotationDirection(turretAngle, targetAngle);
-        if (turretAngle > 400) {
+        turretAngle = (double) (motorTurret.getCurrentPosition()*360/381);//ticksPerDegree);
+        targetAngle = targetHeading - Math.toDegrees(stephenPose.heading());
+        if (targetAngle > 400) {
             targetAngle = targetAngle - 360;
         }
-        if (turretAngle < -40) {
+        if (targetAngle < -40) {
             targetAngle = targetAngle + 360;
         }
+        //angleError = determineRotationDirection(turretAngle, targetAngle);
+        angleError = targetAngle - turretAngle;
+
 
         if (turretTracking) {
             motorTurret.setPower(headingPIDF.calculate(angleError));
         }
         double velocityError = targetVelocity - motorLaunch.getVelocity();
         boolean inPosition = Math.abs(stephenPose.y()-71) > 24;
-        if (Math.abs(velocityError) < 100 && inPosition && Math.abs(angleError) < 5) {
-            motorIntake.setPower(1);
-        }
+        //if (Math.abs(velocityError) < 100 && inPosition && Math.abs(angleError) < 5) {
+        //    motorIntake.setPower(1);
+        //}
     }
 
+    public void addTelemetry(Telemetry telemetry) {
+        telemetry.addData("Turret angle", turretAngle);
+        telemetry.addData("Target angle", targetAngle);
+        telemetry.addData("Angle error", angleError);
+        telemetry.addData("Turret ticks", motorTurret.getCurrentPosition());
+        telemetry.addData("Turret power", motorTurret.getPower());
+        telemetry.addData("Launch target vel", targetVelocity);
+        telemetry.addData("Launch actual vel", motorLaunch.getVelocity());
+    }
 
     public boolean isBusy() {
         //if (currentlyLaunching) {true} else {false} //TODO

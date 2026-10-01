@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.bylazar.configurables.annotations.Configurable;
+//import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
 import com.pedropathing.math.Pose;
@@ -9,12 +9,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
-@Configurable
+//@Configurable
 @TeleOp (name = "Test Teleop")
 public class TestTeleop extends OpMode {
     Follower follower;
     KestrelLauncher launcher;
-    public static boolean isShooting, red, turretTracking;
+    public static boolean isShooting, red, turretTracking = true;
     double targetDistance = 0, targetHeading = 0;
     public static Pose
             stephenPose = new Pose(0,0),
@@ -26,6 +26,7 @@ public class TestTeleop extends OpMode {
     @Override
     public void init() {
         follower = Constants.create(hardwareMap);
+        launcher = new KestrelLauncher();
         launcher.init(hardwareMap);
 
     }
@@ -34,13 +35,18 @@ public class TestTeleop extends OpMode {
     public void loop() {
 
         // DRIVING
-        ManualDrive.driveOrHold(
+        /*ManualDrive.driveOrHold(
                 follower,
                 -gamepad1.left_stick_y,
                 gamepad1.left_stick_x,
                 gamepad1.right_stick_x
+        );*/
+        follower.manual(
+                -gamepad1.left_stick_y,
+                gamepad1.left_stick_x,
+                gamepad1.right_stick_x
         );
-        Pose stephenPose = follower.pose();
+        stephenPose = follower.pose();
 
 
         // LAUNCHER STUFF
@@ -85,6 +91,11 @@ public class TestTeleop extends OpMode {
         telemetry.addData("X", stephenPose.x());
         telemetry.addData("Y", stephenPose.y());
         telemetry.addData("Heading", Math.toDegrees(stephenPose.heading()));
+        telemetry.addLine();
+        telemetry.addData("Target Pose", currentTarget);
+        telemetry.addData("Target Distance", targetDistance);
+        telemetry.addData("Target Heading", targetHeading);
+        launcher.addTelemetry(telemetry);
 
 
         // UPDATE
@@ -98,14 +109,9 @@ public class TestTeleop extends OpMode {
     }
 
     public static double normalizeAngle(double angle) {
-        if (angle > 360) {
-            return angle - 360;
-        } else if (angle < 0) {
-            return angle + 360;
-        } else {
-            return angle;
-        }
+        return ((angle % 360) + 360) % 360;
     }
+
     public static double determineRotationDirection(double current, double target) {
         double clockwiseDegrees;
         double counterclockwiseDegrees;
