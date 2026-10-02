@@ -22,8 +22,8 @@ public class TestAuto extends OpMode {
     private final PoseFactory p = PoseFactory.degrees();
 
     private final Pose startPose = p.of(24, 24, 0);
-    private final Pose scorePose = p.of(48, 48, 90);
-    private final Pose parkPose = p.of(72, 48, 90);
+    private final Pose scorePose = p.of(48, 24, 90);
+    private final Pose parkPose = p.of(24, 24, 180);
 
     Path score = linePath(startPose, scorePose);
     Path park = linePath(scorePose,parkPose);
@@ -69,10 +69,10 @@ public class TestAuto extends OpMode {
 
 
     public Path linePath(Pose start, Pose end) {
-        return Paths.line(start, end);
+        return Paths.line(start, end).linear(start, end);
     }
     public Path curvePath(Pose start, Pose control, Pose end) {
-        return Paths.curve(start, control, end);
+        return Paths.curve(start, control, end).linear(start, end);
     }
 
 
