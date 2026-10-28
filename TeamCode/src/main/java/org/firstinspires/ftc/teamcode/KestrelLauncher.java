@@ -17,8 +17,7 @@ import org.firstinspires.ftc.teamcode.HeadingPIDF;
 
 public class KestrelLauncher {
     DcMotorEx motorLaunch, motorIntake, motorTurret;
-    public static double
-            launcher_p = 0, launcher_f = 0, turret_p = 0.005, turret_i = 0, turret_d = 0, turret_f = 0.01; // TODO tune ts
+    public static double launcher_p = 0, launcher_f = 0, turret_p = 0.005, turret_i = 0, turret_d = 0, turret_f = 0.01; // TODO tune ts
     HeadingPIDF headingPIDF;
 
     public void init(HardwareMap hwMap) {
@@ -47,10 +46,10 @@ public class KestrelLauncher {
     }
 
     double targetVelocity = 0;
-    public static double ticksPerDegree = 381/360; // TODO tune ts
+    public static double ticksPerDegree = 381.0/360.0; // TODO tune ts
     double turretAngle = 0, targetAngle = 0, angleError = 0;
 
-    public void update(boolean isShooting, double distance, double targetHeading) {
+    public void update(boolean isShooting, double distance, double targetHeading, double launchVelocity) {
         motorLaunch.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,
                 new PIDFCoefficients(launcher_p, 0, 0, launcher_f));
         headingPIDF.setCoefficients(turret_p,turret_i,turret_d,turret_f);
@@ -59,10 +58,10 @@ public class KestrelLauncher {
         if (isShooting) {
             motorLaunch.setVelocity(targetVelocity);
         } else {
-            motorLaunch.setVelocity(0);
+            motorLaunch.setVelocity(launchVelocity);
         }
 
-        turretAngle = (double) (motorTurret.getCurrentPosition()*360/381);//ticksPerDegree);
+        turretAngle = (double) (motorTurret.getCurrentPosition()/ticksPerDegree);
         targetAngle = targetHeading - Math.toDegrees(stephenPose.heading());
         if (targetAngle > 400) {
             targetAngle = targetAngle - 360;

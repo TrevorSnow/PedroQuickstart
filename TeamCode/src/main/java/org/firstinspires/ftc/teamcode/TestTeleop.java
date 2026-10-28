@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-//import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
 import com.pedropathing.math.Pose;
@@ -15,7 +14,8 @@ public class TestTeleop extends OpMode {
     Follower follower;
     KestrelLauncher launcher;
     public static boolean isShooting, red, turretTracking = true;
-    double targetDistance = 0, targetHeading = 0;
+    double launchVelocity = 0, targetDistance = 0, targetHeading = 0;
+    public static double closeVelocity = 1500, farVelocity = 2000;
     public static Pose
             stephenPose = new Pose(0,0),
             blueTarget = new Pose(0,0),
@@ -50,20 +50,23 @@ public class TestTeleop extends OpMode {
 
 
         // LAUNCHER STUFF
-        if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) {
-            red = !red;
-        }
-        if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) {
-            isShooting = !isShooting;
-        }
-        if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) {
-            turretTracking = !turretTracking;
-        }
+        if (gamepad1.dpadDownWasPressed() || gamepad2.dpadDownWasPressed()) { red = !red; }
+        if (gamepad1.dpadRightWasPressed() || gamepad2.dpadRightWasPressed()) { isShooting = !isShooting; }
+        if (gamepad1.dpadLeftWasPressed() || gamepad2.dpadLeftWasPressed()) { turretTracking = !turretTracking; }
 
         if (gamepad1.right_bumper || gamepad2.right_bumper) {
             launcher.motorIntake.setPower(1);
+        } else if (gamepad1.left_bumper || gamepad2.left_bumper) {
+            launcher.motorIntake.setPower(-1);
         } else if (!launcher.isBusy()) {
             launcher.motorIntake.setPower(0);
+        }
+        if (gamepad1.a || gamepad2.a) {
+            launchVelocity = closeVelocity;
+        } else if (gamepad1.b || gamepad2.b) {
+            launchVelocity = farVelocity;
+        } else {
+            launchVelocity = 0;
         }
 
         if (stephenPose.y() < 71) {
@@ -81,7 +84,7 @@ public class TestTeleop extends OpMode {
 
         targetDistance = calculateDistance(currentTarget.x(), currentTarget.y(), stephenPose.x(), stephenPose.y());
         targetHeading = normalizeAngle(Math.toDegrees(Math.atan2(currentTarget.y() - stephenPose.y(),  currentTarget.x() - stephenPose.x())));
-        launcher.update(isShooting, targetDistance, targetHeading);
+        launcher.update(isShooting, targetDistance, targetHeading, launchVelocity);
         if (!turretTracking) {
             launcher.motorTurret.setPower(gamepad2.right_stick_x);
         }

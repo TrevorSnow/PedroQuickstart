@@ -40,7 +40,6 @@ public class TestAuto extends OpMode {
     @Override
     public void start() {
         schedule(autoRoutine());
-
     }
 
     @Override
