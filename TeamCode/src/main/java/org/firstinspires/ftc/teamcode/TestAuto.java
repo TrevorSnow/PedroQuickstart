@@ -19,14 +19,17 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 @Autonomous
 public class TestAuto extends OpMode {
     private Follower follower;
+    private KestrelLauncher launcher;
     private final PoseFactory p = PoseFactory.degrees();
 
-    private final Pose startPose = p.of(24, 24, 0);
-    private final Pose scorePose = p.of(48, 24, 90);
-    private final Pose parkPose = p.of(24, 24, 180);
+    private final Pose
+            startPose = p.of(24, 24, 0),
+            scorePose = p.of(48, 24, 90),
+            parkPose = p.of(24, 24, 180);
 
-    Path score = linePath(startPose, scorePose);
-    Path park = linePath(scorePose,parkPose);
+    Path
+            score = linePath(startPose, scorePose),
+            park = linePath(scorePose,parkPose);
 
     @Override
     public void init() {
@@ -61,6 +64,7 @@ public class TestAuto extends OpMode {
         return sequential(
                 follow(follower, score),
                 // Add mechanism commands here.
+
                 follow(follower, park)
         );
     }
@@ -73,6 +77,5 @@ public class TestAuto extends OpMode {
     public Path curvePath(Pose start, Pose control, Pose end) {
         return Paths.curve(start, control, end).linear(start, end);
     }
-
 
 }
