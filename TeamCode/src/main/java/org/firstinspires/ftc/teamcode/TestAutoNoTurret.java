@@ -4,6 +4,8 @@ import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
 
+import static org.firstinspires.ftc.teamcode.KestrelLauncherNoTurret.shootBalls;
+
 import com.pedropathing.api.Paths;
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
@@ -11,16 +13,17 @@ import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 @Autonomous
-public class TestAuto extends OpMode {
+public class TestAutoNoTurret extends OpMode {
     private Follower follower;
-    private KestrelLauncher launcher;
+    private KestrelLauncherNoTurret launcher;
     private final PoseFactory p = PoseFactory.degrees();
+    boolean red = true, isShooting = false;
 
     private final Pose
             startPose = p.of(24, 24, 0),
@@ -31,12 +34,24 @@ public class TestAuto extends OpMode {
             score = linePath(startPose, scorePose),
             park = linePath(scorePose,parkPose);
 
+    private Command autoRoutine() {
+        return sequential(
+                follow(follower, score),
+
+                shootBalls(4),
+
+                follow(follower, park)
+        );
+    }
+
     @Override
     public void init() {
         Scheduler.reset();
         follower = Constants.create(hardwareMap);
         follower.setPose(startPose);
         follower.update();
+        launcher = new KestrelLauncherNoTurret();
+        launcher.init(hardwareMap);
 
     }
 
@@ -49,8 +64,12 @@ public class TestAuto extends OpMode {
     public void loop() {
         follower.update();
         Scheduler.execute();
+        launcher.update();
+        launcher.updateShooter();
+        launcher.setLauncher(isShooting);
 
         Pose robotPose = follower.pose();
+        KestrelLauncher.robotPose = robotPose;
 
         telemetry.addData("X", robotPose.x());
         telemetry.addData("Y", robotPose.y());
@@ -58,15 +77,6 @@ public class TestAuto extends OpMode {
         telemetry.addData("Follower Mode", follower.mode());
 
         telemetry.update();
-    }
-
-    private Command autoRoutine() {
-        return sequential(
-                follow(follower, score),
-                // Add mechanism commands here.
-
-                follow(follower, park)
-        );
     }
 
 

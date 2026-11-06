@@ -44,27 +44,27 @@ public class Constants {
     public static ForesightConfig foresightConfig = new ForesightConfig(
             c -> {
                 //all these are subject to change once you tune
-                Controller primaryTranslationalForward = Controller.proportional(0);
-                Controller secondaryTranslationalForward = Controller.proportional(0);
-                Controller primaryTranslationalLateral = Controller.proportional(0);
-                Controller secondaryTranslationalLateral = Controller.proportional(0);
+                Controller primaryTranslationalForward = Controller.proportional(1.0);
+                Controller secondaryTranslationalForward = Controller.proportional(0.2);
+                Controller primaryTranslationalLateral = Controller.proportional(0.4);
+                Controller secondaryTranslationalLateral = Controller.proportional(0.3);
 
-                c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(0, primaryTranslationalForward));
-                c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(0, primaryTranslationalLateral));
+                c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(0.2, primaryTranslationalForward));
+                c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(0.5, primaryTranslationalLateral));
 
-                c.coast.set(Controller.proportionalFeedforward(0));
-                c.brake.set(Controller.proportionalFeedforward(0));
+                c.coast.set(Controller.proportionalFeedforward(0.2));
+                c.brake.set(Controller.proportionalFeedforward(0.2));
 
-                c.headingFeedback.set(Controller.proportional(0));
-                c.headingBrakeCoefficients.set(Vector2D.cartesian(0, 0));
+                c.headingFeedback.set(Controller.proportional(0.2));
+                c.headingBrakeCoefficients.set(Vector2D.cartesian(5.0, 2.0));
 
-                c.linearBrakeCoefficients.set(Matrix.diag(0, 0));
-                c.quadraticBrakeCoefficients.set(Matrix.diag(0, 0));
+                c.linearBrakeCoefficients.set(Matrix.diag(0.4, 0.5));
+                c.quadraticBrakeCoefficients.set(Matrix.diag(0.4, 0.5));
 
-                c.maxAchievableForwardVelocity.set(0.0);
-                c.maxAchievableStrafeVelocity.set(0.0);
-                c.naturalForwardDeceleration.set(0.0);
-                c.naturalStrafeDeceleration.set(0.0);
+                c.maxAchievableForwardVelocity.set(0.8);
+                c.maxAchievableStrafeVelocity.set(0.9);
+                c.naturalForwardDeceleration.set(0.8);
+                c.naturalStrafeDeceleration.set(0.9);
             }
     );
     public static Follower create(HardwareMap h) {
