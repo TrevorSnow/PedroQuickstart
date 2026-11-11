@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
 public class HeadingPIDF {
     // PIDF coefficients
     public double kP, kI, kD, kF;
@@ -16,11 +18,11 @@ public class HeadingPIDF {
         this.kF = kF;
     }
 
-    public void setCoefficients(double kP1, double kI1, double kD1, double kF1) {
-        kP = kP1;
-        kI = kI1;
-        kD = kD1;
-        kF = kF1;
+    public void setCoefficients(PIDFCoefficients pidfCoefficients) {
+        kP = pidfCoefficients.p;
+        kI = pidfCoefficients.i;
+        kD = pidfCoefficients.d;
+        kF = pidfCoefficients.f;
     }
 
     public void reset() {

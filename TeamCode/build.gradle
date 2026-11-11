@@ -22,7 +22,7 @@ android {
     packagingOptions {
         jniLibs.useLegacyPackaging true
     }
-    compileSdk 35
+    compileSdk 34
     defaultConfig {
         minSdk 24
     }

@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.FalconsTeleOp.calculateDistance;
-import static org.firstinspires.ftc.teamcode.FalconsTeleOp.determineRotationDirection;
-import static org.firstinspires.ftc.teamcode.FalconsTeleOp.normalizeAngle;
 import static org.firstinspires.ftc.teamcode.FalconsTeleOp.stephenPose;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -17,13 +15,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+@Config
 public class KestrelLauncherNoTurret {
     static DcMotorEx motorLaunch;
     static DcMotorEx motorIntake;
     static Servo servoGate;
     static Servo servoLoader;
     public static double launcher_p = 0, launcher_f = 0; // TODO tune ts
-    HeadingPIDF headingPIDF;
     public static Pose robotPose;
 
     static int shotsRemaining = 0;
@@ -159,7 +157,7 @@ public class KestrelLauncherNoTurret {
     public static void setIntake(double power) {motorIntake.setPower(power);}
 
 // GATE SERVO
-    static double gateOpen = 0, gateClosed = 0.5;
+    public static double gateOpen = 0, gateClosed = 0.5;
     public static void openGate() {servoGate.setPosition(gateOpen);}
     public static void closeGate() {servoGate.setPosition(gateClosed);}
 
@@ -167,7 +165,7 @@ public class KestrelLauncherNoTurret {
     public static void setGate(double pose) {servoGate.setPosition(pose);}
 
 // LOADER
-    static double loaderUp = 0.2, loaderDown = 0.5;
+    public static double loaderUp = 0.2, loaderDown = 0.5;
     public static void setLoader(boolean down) {servoLoader.setPosition(down ? loaderDown : loaderUp);}
     public static void setLoader(double pose) {servoLoader.setPosition(pose);}
 
@@ -178,5 +176,38 @@ public class KestrelLauncherNoTurret {
         telemetry.addLine();
         telemetry.addData("Launch target vel", targetVelocity);
         telemetry.addData("Launch actual vel", motorLaunch.getVelocity());
+    }
+    public void addDashboardTelemetry(Telemetry telemetry) {
+        telemetry.addData("Target Pose", currentTarget);
+        telemetry.addData("Target Distance", targetDistance);
+        telemetry.addData("Target Heading", targetHeading);
+        telemetry.addLine();
+        telemetry.addData("Launch target vel", targetVelocity);
+        telemetry.addData("Launch actual vel", motorLaunch.getVelocity());
+    }
+
+    public static double calculateDistance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
+    public static double normalizeAngle(double angle) {
+        return ((angle % 360) + 360) % 360;
+    }
+    public static double determineRotationDirection(double current, double target) {
+        double clockwiseDegrees;
+        double counterclockwiseDegrees;
+
+        // Determine the larger of the two headings
+        if (target > current) {
+            counterclockwiseDegrees = target - current;
+            clockwiseDegrees = 360 - counterclockwiseDegrees;
+        } else {
+            clockwiseDegrees = current - target;
+            counterclockwiseDegrees = 360 - clockwiseDegrees;
+        }
+        if (clockwiseDegrees < counterclockwiseDegrees) {
+            return -clockwiseDegrees;
+        } else {
+            return counterclockwiseDegrees;
+        }
     }
 }
